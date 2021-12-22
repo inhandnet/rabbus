@@ -149,7 +149,7 @@ type (
 	}
 )
 
-func (lc ListenConfig) validate() error {
+func (lc *ListenConfig) validate() error {
 	if lc.Exchange == "" {
 		return ErrMissingExchange
 	}
