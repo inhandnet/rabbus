@@ -1,6 +1,9 @@
 package amqp
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/streadway/amqp"
+	"strings"
+)
 
 type (
 	// AMQP interpret (implement) AMQP interface definition
@@ -37,7 +40,14 @@ func (ai *AMQP) CreateConsumer(exchange, key, kind, queue string, durable bool, 
 		return nil, err
 	}
 
-	q, err := ai.ch.QueueDeclare(queue, durable, false, false, false, declareArgs)
+	var q amqp.Queue
+	var err error
+	if strings.HasPrefix(queue, "rabbus.gen-") {
+		q, err = ai.ch.QueueDeclare(queue, durable, true, true, false, declareArgs)
+	} else {
+		q, err = ai.ch.QueueDeclare(queue, durable, false, false, false, declareArgs)
+	}
+
 	if err != nil {
 		return nil, err
 	}

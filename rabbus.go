@@ -3,6 +3,8 @@ package rabbus
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -157,7 +159,10 @@ func (lc ListenConfig) validate() error {
 	}
 
 	if lc.Queue == "" {
-		return ErrMissingQueue
+		rand.Seed(time.Now().UnixNano())
+		b := make([]byte, 24)
+		rand.Read(b)
+		lc.Queue = fmt.Sprintf("rabbus.gen-%x", b)[:24]
 	}
 
 	return nil
