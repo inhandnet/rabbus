@@ -69,6 +69,10 @@ type (
 		// PassiveExchange determines a passive exchange connection it uses
 		// amqp's ExchangeDeclarePassive instead the default ExchangeDeclare
 		PassiveExchange bool
+
+		// TempQueue declare a auto deleted temp queue
+		TempQueue bool
+
 		// Queue the queue name
 		Queue string
 		// DeclareArgs is a list of arguments accepted for when declaring the queue.
@@ -160,9 +164,9 @@ func (lc *ListenConfig) validate() error {
 
 	if lc.Queue == "" {
 		rand.Seed(time.Now().UnixNano())
-		b := make([]byte, 24)
+		b := make([]byte, 6)
 		rand.Read(b)
-		lc.Queue = fmt.Sprintf("rabbus.gen-%x", b)[:24]
+		lc.Queue = fmt.Sprintf("rabbus.gen-%x", b)
 	}
 
 	return nil
@@ -262,6 +266,13 @@ func (r *Rabbus) Listen(c ListenConfig) (chan ConsumerMessage, error) {
 
 	if c.BindArgs == nil {
 		c.BindArgs = NewBindArgs()
+	}
+
+	if c.TempQueue {
+		rand.Seed(time.Now().UnixNano())
+		b := make([]byte, 6)
+		rand.Read(b)
+		c.Queue = fmt.Sprintf("rabbus.gen-%s-%x", c.Queue, b)
 	}
 
 	msgs, err := r.CreateConsumer(c.Exchange, c.Key, c.Kind, c.Queue, r.config.durable, c.DeclareArgs.args, c.BindArgs.args)
